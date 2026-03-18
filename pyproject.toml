@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-eval"
+version = "0.1.0"
+description = "CLI tool for evaluating and comparing LLM outputs"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "typer[rich]>=0.12.0",
+    "sqlmodel>=0.0.14",
+    "alembic>=1.13.0",
+    "litellm>=1.40.0",
+    "jinja2>=3.1.0",
+    "psycopg2-binary>=2.9.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+    "pyyaml>=6.0.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+]
+
+[project.scripts]
+eval = "llm_eval.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_eval"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/llm_eval"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

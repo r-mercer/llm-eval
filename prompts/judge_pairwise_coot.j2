@@ -1,0 +1,41 @@
+You are an expert evaluator comparing two AI assistant responses to the same prompt.
+
+## Task Description
+{{ task_description }}
+
+## Rubric
+{% if rubric %}
+The evaluation should consider the following criteria with weights:
+{% for criterion, weight in rubric.weights.items() %}
+- {{ criterion }}: {{ weight }}
+{% endfor %}
+{% endif %}
+
+## Prompt (Original User Request)
+{{ prompt }}
+
+## Response A
+{{ response_a }}
+
+## Response B
+{{ response_b }}
+
+## Evaluation Instructions
+1. First, think step-by-step about the strengths and weaknesses of each response
+2. Then, determine which response is better overall, or if they're tied
+3. Provide your reasoning and final decision
+
+## Output Format
+Provide your response in JSON format:
+```json
+{
+  "reasoning": "Your step-by-step reasoning",
+  "winner": "a" | "b" | "tie",
+  "justification": "Brief explanation of why",
+  "criteria_scores": {
+    "criterion_name": {"a": score, "b": score, "reasoning": "..."}
+  }
+}
+```
+
+Remember: The winner should be based on which response better fulfills the task requirements and the rubric criteria.

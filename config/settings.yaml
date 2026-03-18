@@ -1,0 +1,3 @@
+# Evaluation settings
+default_judge_model: gpt-4o
+default_rubric: quality

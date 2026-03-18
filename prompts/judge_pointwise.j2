@@ -1,0 +1,38 @@
+You are an expert evaluator scoring an AI assistant response against a rubric.
+
+## Task Description
+{{ task_description }}
+
+## Rubric
+{% if rubric %}
+Score the response on each criterion (0-10 scale):
+{% for criterion, weight in rubric.weights.items() %}
+- {{ criterion }}: weight={{ weight }}
+{% endfor %}
+
+Overall Score = sum(criterion_score * weight) / sum(weights)
+{% endif %}
+
+## Prompt (Original User Request)
+{{ prompt }}
+
+## Response to Evaluate
+{{ response }}
+
+## Evaluation Instructions
+1. Evaluate the response against each criterion in the rubric
+2. Provide a score from 0-10 for each criterion
+3. Calculate the weighted overall score
+4. Provide justification for your scores
+
+## Output Format
+Provide your response in JSON format:
+```json
+{
+  "criteria_scores": {
+    "criterion_name": {"score": 0-10, "reasoning": "..."}
+  },
+  "overall_score": 0-10,
+  "justification": "Overall explanation"
+}
+```

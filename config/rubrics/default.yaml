@@ -1,0 +1,6 @@
+name: quality
+description: General quality assessment
+weights:
+  accuracy: 0.4
+  clarity: 0.3
+  safety: 0.3
