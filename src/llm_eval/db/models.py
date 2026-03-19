@@ -160,7 +160,7 @@ class Result(SQLModel, table=True):
     __tablename__ = "results"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    experiment_id: uuid.UUID = Field(foreign_key="experiments.id", description="Parent experiment ID")
+    experiment_id: Optional[uuid.UUID] = Field(default=None, foreign_key="experiments.id", description="Parent experiment ID")
     task_id: uuid.UUID = Field(foreign_key="tasks.id", description="Task ID")
     model_id: uuid.UUID = Field(foreign_key="model_configs.id", description="Model configuration ID")
     prompt_id: Optional[uuid.UUID] = Field(default=None, foreign_key="prompts.id", description="Prompt template ID")

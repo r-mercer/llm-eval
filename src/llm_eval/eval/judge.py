@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from jinja2 import Template, TemplateNotFound
+from jinja2 import Template
 
 from llm_eval.db.models import ModelConfig, Rubric
 from llm_eval.models.provider import ModelProvider, ProviderFactory
@@ -187,7 +187,6 @@ class Judge:
         swap = random.choice([True, False])
         rendered_a = response_b if swap else response_a
         rendered_b = response_a if swap else response_b
-        original_positions = {"a_was_swapped": swap}
 
         # Load and render template
         template = self._load_template(self._config.template_name)
@@ -447,7 +446,6 @@ def _extract_json_with_regex(text: str) -> Optional[str]:
     Returns:
         Extracted JSON string, or None if not found.
     """
-    import re
 
     # Find the first { and last } to get the JSON object
     start = text.find("{")

@@ -8,10 +8,10 @@ from typing import Optional
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.print import print as rich_print
 from rich.table import Table
 from rich.theme import Theme
-from sqlalchemy import desc, func as sql_func
+from sqlalchemy import func as sql_func
+from sqlmodel import desc
 
 # Import database components
 from llm_eval.db.models import (
@@ -51,17 +51,17 @@ app = typer.Typer(
 
 def print_error(message: str) -> None:
     """Print error message in red."""
-    rich_print(f"[error]Error:[/error] {message}")
+    console.print(f"[error]Error:[/error] {message}")
 
 
 def print_success(message: str) -> None:
     """Print success message in green."""
-    rich_print(f"[success]{message}[/success]")
+    console.print(f"[success]{message}[/success]")
 
 
 def print_info(message: str) -> None:
     """Print info message in cyan."""
-    rich_print(f"[info]{message}[/info]")
+    console.print(f"[info]{message}[/info]")
 
 
 def validate_uuid(value: str) -> uuid.UUID:
@@ -385,7 +385,7 @@ def create_experiment_command(
     try:
         with get_session() as session:
             # Validate judge model exists
-            judge = session.query(ModelConfig).filter(ModelConfig.name == judge_model).first()
+            judge = session.query(ModelConfig).filter(ModelConfig.is_active).filter(ModelConfig.name == judge_model).first()
             if not judge:
                 print_error(f"Judge model '{judge_model}' not found")
                 raise typer.BadParameter(f"Judge model '{judge_model}' not found")
@@ -399,7 +399,7 @@ def create_experiment_command(
             # Validate baseline model if provided
             baseline = None
             if baseline_model:
-                baseline = session.query(ModelConfig).filter(ModelConfig.name == baseline_model).first()
+                baseline = session.query(ModelConfig).filter(ModelConfig.is_active).filter(ModelConfig.name == baseline_model).first()
                 if not baseline:
                     print_error(f"Baseline model '{baseline_model}' not found")
                     raise typer.BadParameter(f"Baseline model '{baseline_model}' not found")
@@ -483,7 +483,7 @@ def experiment_status_command(
             experiment = session.get(Experiment, exp_id)
             if not experiment:
                 print_error(f"Experiment '{experiment_id}' not found")
-                raise typer.BadParameter(f"Experiment not found")
+                raise typer.BadParameter("Experiment not found")
 
             # Get related data
             results_count = session.query(Result).filter(Result.experiment_id == exp_id).count()
@@ -538,7 +538,7 @@ def run_experiment_command(
             experiment = session.get(Experiment, exp_id)
             if not experiment:
                 print_error(f"Experiment '{experiment_id}' not found")
-                raise typer.BadParameter(f"Experiment not found")
+                raise typer.BadParameter("Experiment not found")
 
             # Check experiment status
             if experiment.status == "completed":
@@ -681,7 +681,7 @@ def show_results_command(
             experiment = session.get(Experiment, exp_id)
             if not experiment:
                 print_error(f"Experiment '{experiment_id}' not found")
-                raise typer.BadParameter(f"Experiment not found")
+                raise typer.BadParameter("Experiment not found")
 
             results = (
                 session.query(Result)
@@ -765,7 +765,7 @@ def export_results_command(
             experiment = session.get(Experiment, exp_id)
             if not experiment:
                 print_error(f"Experiment '{experiment_id}' not found")
-                raise typer.BadParameter(f"Experiment not found")
+                raise typer.BadParameter("Experiment not found")
 
             results = session.query(Result).filter(Result.experiment_id == exp_id).all()
             judge_runs = session.query(JudgeRun).filter(JudgeRun.experiment_id == exp_id).all()

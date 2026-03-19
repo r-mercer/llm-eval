@@ -8,19 +8,9 @@ from typing import TYPE_CHECKING, Generator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlmodel import Session, SQLModel, create_engine
 
-from llm_eval.db.models import (
-    Experiment,
-    JudgeRun,
-    ModelConfig,
-    ModelRating,
-    Prompt,
-    Result,
-    Rubric,
-    Task,
-)
 
 if TYPE_CHECKING:
-    from sqlmodel import Engine
+    from sqlalchemy.engine import Engine
 
 
 # =============================================================================

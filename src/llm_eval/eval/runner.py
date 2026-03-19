@@ -6,7 +6,7 @@ and updating Elo ratings.
 """
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 
 from sqlmodel import select
@@ -21,7 +21,7 @@ from llm_eval.db.models import (
     Task,
 )
 from llm_eval.db.session import Session
-from llm_eval.eval.comparator import Comparator, create_comparator
+from llm_eval.eval.comparator import create_comparator
 from llm_eval.eval.ranking import EloRating
 from llm_eval.models.provider import ProviderFactory
 
@@ -562,7 +562,7 @@ class ExperimentRunner:
         Returns:
             List of active model configurations.
         """
-        statement = select(ModelConfig).where(ModelConfig.is_active == True)
+        statement = select(ModelConfig).where(ModelConfig.is_active)
         return list(self._session.exec(statement).all())
 
     def _get_all_tasks(self) -> list[Task]:

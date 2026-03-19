@@ -28,21 +28,21 @@ pip install -e .
 - Add a model definition for each LLM provider you want to evaluate (OpenAI, Anthropic, Ollama, etc.).
 - Example (pseudo):
 ```
-llmeval config add-model --name openai --type openai --api-key $OPENAI_KEY
+eval config add-model --name openai --provider openai --api-key $OPENAI_KEY
 ```
 
 4) Adding tasks
 - Define tasks to evaluate: prompts, expected outputs, or evaluation targets.
 - Example:
 ```
-llmeval task add --name sentiment-classification --prompt 'Is this sentiment positive, negative, or neutral? ...'
+eval task add --name sentiment-classification --input-text 'Is this sentiment positive, negative, or neutral? ...'
 ```
 
 5) Running an evaluation
 - Create an experiment and run it against configured models.
 ```
-llmeval experiment create --name my-first-eval
-llmeval run experiment --id <exp-id>
+eval experiment create --name my-first-eval
+eval run experiment --id <exp-id>
 ```
 
 ## Configuration
@@ -64,8 +64,8 @@ export DB_PASSWORD=secret
 - config init
 - config add-model
 - config add-rubric
-- list-models
-- list-rubrics
+- config list-models
+- config list-rubrics
 - task add
 - task list
 - task import
@@ -90,26 +90,26 @@ Notes:
 
 - Initialize config and add a model:
 ```
-llmeval config init
-llmeval config add-model --name openai --type openai --api-key $OPENAI_API_KEY
+eval config init
+eval config add-model --name openai --provider openai --api-key $OPENAI_API_KEY
 ```
 
 - Create a task and import prompts:
 ```
-llmeval task add --name queuing-task --prompt-file prompts.json
-llmeval task import prompts.json
+eval task add --name queuing-task --input-text-file prompts.json
+eval task import prompts.json
 ```
 
 - Create an experiment and run it:
 ```
-llmeval experiment create --name baseline-eval
-llmeval run experiment --id 1
+eval experiment create --name baseline-eval
+eval run experiment --id 1
 ```
 
 - Show results and export:
 ```
-llmeval results show --experiment-id 1
-llmeval results export --format json --output results.json
+eval results show --experiment-id 1
+eval results export --format json --output results.json
 ```
 
 ## Development

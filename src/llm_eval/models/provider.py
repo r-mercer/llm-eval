@@ -8,7 +8,6 @@ import os
 from dataclasses import dataclass, field
 from typing import Optional
 
-import litellm
 from litellm import acompletion, completion
 
 from llm_eval.db.models import ModelConfig
