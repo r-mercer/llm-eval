@@ -1,164 +1,167 @@
-# AGENTS.md - LLM Eval
+# AGENTS.md — llm-eval
 
-This file provides instructions for AI coding agents working in this repository.
+This file gives pragmatic rules and commands for autonomous coding agents working in this repository.
+Keep changes conservative, explain assumptions in PRs or commit messages, and prefer small, testable edits.
 
-## Project Overview
+## Quick Project Overview
 
-Python CLI tool for evaluating and comparing LLM outputs using pairwise comparisons, configurable rubrics, and Elo rating leaderboards. Built with Typer (CLI), SQLModel (database), LiteLLM (multi-provider LLM access), and PostgreSQL.
-
-Package source: `src/llm_eval/` with subpackages: `cli`, `config`, `db`, `eval`, `models`.
+Python CLI for evaluating LLM outputs with pairwise comparisons, configurable rubrics, and Elo-style ranking. Key packages: Typer (CLI), SQLModel (ORM), LiteLLM (providers), Alembic (migrations). Source root: `src/llm_eval/`.
 
 ## Build, Lint, and Test Commands
 
+Use the venv in this repo or create a fresh one. Recommended Python: 3.10+ (project uses 3.12 locally in the dev environment).
+
+Install (editable/dev):
+
 ```bash
-# Install (editable/dev mode)
-pip install -e ".[dev]"
+pip install -e '.[dev]'
+```
 
-# Lint
-ruff check src/ tests/
-ruff check src/ tests/ --fix   # auto-fix
+Lint & format:
 
-# Format
-black src/ tests/
+```bash
+ruff check src/ tests/            # lint
+ruff check src/ tests/ --fix      # auto-fix lint issues when safe
+black src/ tests/                 # format code
+pyright                           # type-check (pyrightconfig.json provided)
+```
 
-# Type-check (no mypy configured yet - use pyright if needed)
+Tests:
 
-# Run all tests
-pytest
+```bash
+pytest                             # run all tests
+pytest -q                          # quieter output
+pytest tests/test_file.py          # run a single test file
+pytest tests/test_file.py::test_fn # run a single test
+pytest -k 'substring'              # run tests matching expression
+pytest --maxfail=1 --disable-warnings
 
-# Run a single test file
-pytest tests/test_file.py
-
-# Run a single test
-pytest tests/test_file.py::test_function_name
-
-# Run tests with coverage
+# Coverage
 pytest --cov=src/llm_eval --cov-report=term-missing
+```
 
-# Database migrations
-alembic revision --autogenerate -m "description"
+Database migrations:
+
+```bash
+alembic revision --autogenerate -m "msg"
 alembic upgrade head
-
-# CLI entry point (installed as `eval` command)
-eval --help
 ```
 
-## Architecture
+CLI entrypoint (when package installed): `eval --help`
 
-- **`src/llm_eval/cli/main.py`**: Typer CLI with subcommands: `config`, `task`, `experiment`, `run`, `results`
-- **`src/llm_eval/db/`**: SQLModel models (`models.py`) and session management (`session.py`)
-- **`src/llm_eval/eval/`**: Core evaluation logic - `runner.py` (orchestrator), `comparator.py` (pairwise), `judge.py` (LLM-as-judge), `ranking.py` (Elo)
-- **`src/llm_eval/models/provider.py`**: LiteLLM provider abstraction via `ModelProvider` and `ProviderFactory`
-- **`src/llm_eval/config/`**: YAML config loading for models and rubrics
-- **`prompts/`**: Jinja2 templates for judge prompts (`.j2` files)
-- **`config/`**: Default YAML configs (models, rubrics, settings)
-- **`alembic/`**: Database migration scripts
+## High‑level Architecture
 
-## Code Style Guidelines
+- CLI: `src/llm_eval/cli/main.py` (Typer)
+- DB: `src/llm_eval/db/` (SQLModel models + session)
+- Eval core: `src/llm_eval/eval/` (runner, comparator, judge, ranking)
+- Provider abstraction: `src/llm_eval/models/provider.py`
+- Configs: `config/*.yaml` and `src/llm_eval/config/*`
+- Prompts: `prompts/*.j2`
+- Migrations: `alembic/`
 
-### Imports
+## Code Style Guidelines (for agents)
 
-Group imports in order: stdlib, third-party, local. Use absolute imports for project modules.
+- Imports: group and order — standard library, third-party, local. Use absolute imports for project modules.
 
-```python
-import json
-from pathlib import Path
-from typing import Optional
+  Example:
 
-from sqlmodel import select
-from rich.console import Console
+  ```python
+  import json
+  from pathlib import Path
 
-from llm_eval.db.models import Experiment, Result
-from llm_eval.eval.comparator import Comparator
-```
+  from sqlmodel import select
+  from rich.console import Console
 
-### Types and Annotations
+  from llm_eval.db.models import Experiment
+  from llm_eval.eval.comparator import Comparator
+  ```
 
-- Use full type hints on all function signatures (parameters and return types)
-- Use `Optional[X]` for nullable values (not `X | None`)
-- Use built-in generics: `list[X]`, `dict[K, V]`, `set[X]` (Python 3.10+ style)
-- Use `TYPE_CHECKING` guard for import-only type hints to avoid circular imports
-- Prefer frozen `@dataclass(frozen=True)` for immutable value objects
+- Types & annotations:
+  - Provide full type signatures for functions and methods (params and return types).
+  - Use `Optional[X]` (not `X | None`) for nullable types to keep compatibility with TYPE_CHECKING guards.
+  - Prefer built-in generics: `list[str]`, `dict[str, Any]`.
+  - Use `from typing import TYPE_CHECKING` to avoid circular import runtime costs.
 
-### Naming Conventions
+- Naming:
+  - `snake_case` for functions, methods, variables and module-level constants
+  - `PascalCase` for classes and dataclasses
+  - `UPPER_SNAKE_CASE` for constants
+  - Private helpers prefixed with `_`
+  - Exception classes end with `Error` (e.g., `JudgeError`)
 
-- `snake_case` for functions, methods, variables, module-level constants
-- `PascalCase` for classes and type aliases
-- `UPPER_SNAKE_CASE` for module-level constants
-- Prefix private methods with `_` (e.g., `_get_experiment`)
-- Exception classes end with `Error` (e.g., `JudgeError`, `RunnerError`)
+- Docstrings:
+  - Use Google-style docstrings with `Args`, `Returns`, and `Raises` sections.
 
-### Docstrings
+- Formatting & structure:
+  - Keep files focused; if a file exceeds ~400 lines, consider splitting it.
+  - Use banner comments to separate logical sections when helpful:
 
-Use Google-style docstrings with `Args`, `Returns`, and `Raises` sections:
+    ```python
+    # =============================================================================
+    # Section Name
+    # =============================================================================
+    ```
 
-```python
-def evaluate_pairwise(self, response_a: str, response_b: str) -> JudgeResult:
-    """Evaluate two responses in a pairwise comparison.
+- Error handling:
+  - Define domain-specific exception hierarchies (module base -> specific errors).
+  - Fail fast with input validation and raise descriptive exceptions.
+  - Re-raise exceptions with `from e` to preserve tracebacks.
+  - Wrap external library errors and map them to domain exceptions in helper methods (e.g., `_handle_error`).
 
-    Args:
-        response_a: First response to evaluate.
-        response_b: Second response to evaluate.
+- Database models (SQLModel):
+  - Specify `__tablename__` on models.
+  - Use `Field(..., description=...)` for columns.
+  - For JSON-like columns use `sa_type=JSON`.
+  - Use relationships with `back_populates` for bidirectional relationships.
+  - Prefer UUID primary keys with `default_factory=uuid.uuid4` where appropriate.
 
-    Returns:
-        JudgeResult with winner, justification, and optional reasoning.
+- Factories & constructors:
+  - Use `create_*` factory functions to assemble complex objects and hide wiring logic.
 
-    Raises:
-        JudgeError: If evaluation fails.
-    """
-```
+- Configuration & secrets:
+  - Keep API keys and secrets in environment variables. Resolve them at config boundaries, not deep inside business logic.
+  - DB environment variables should use `DB_` prefix.
 
-### Section Separators
+- CLI patterns:
+  - Use Typer `typer.Option(..., help="...")` for flags and arguments.
+  - Validate user input early and raise `typer.BadParameter` for invalid values.
+  - Use Rich for formatted output (tables, panels) to improve CLI UX.
 
-Use banner comments to separate logical sections within files:
+## Testing Guidelines
 
-```python
-# =============================================================================
-# Section Name
-# =============================================================================
-```
+- Tests live in `tests/` and use pytest. Name test modules `test_*.py` and test functions `test_*`.
+- Use fixtures for DB/session setup and teardown. Keep tests deterministic and fast; mock external LLM/network calls where possible.
+- When adding tests, run the matching subset locally (`pytest tests/test_x.py::test_y -q`).
 
-### Error Handling
+## Git & Commit Rules for Agents
 
-- Define custom exception hierarchies with a base class per module (e.g., `RunnerError` -> `ExperimentNotFoundError`)
-- Fail fast with guard clauses and early validation at function entry
-- Raise specific exceptions, not generic `Exception`
-- Re-raise with `from e` to preserve tracebacks
-- Map external library errors to domain exceptions in `_handle_error` style methods
+- NEVER run destructive git commands like `git reset --hard` or `git checkout --` unless explicitly requested.
+- Do not amend commits unless the user explicitly requests it and the safety rules in repo tooling allow it.
+- Do not commit secrets (.env, credentials). If discovered, notify the user and redact before committing.
+- Only create commits when explicitly asked. When committing, use clear messages describing the "why" (1–2 sentence summary).
 
-### Database Models (SQLModel)
+## Agent Behaviour & Safety
 
-- Define `__tablename__` explicitly on each model class
-- Use `Field()` with `description=` for all columns
-- Use `sa_type=JSON` for dict/list columns
-- Use `Relationship(back_populates=...)` for bidirectional relationships
-- Define `__all__` in models module for clean re-exports
-- Use UUID primary keys with `default_factory=uuid.uuid4`
+- Default to making minimal, well-tested changes; include tests when behavior changes.
+- If a requested change is ambiguous and would materially alter behavior, make a safe default and document it in the PR/commit message; ask one targeted question if necessary.
+- If you must ask a question, do all non-blocked work first and then ask exactly one targeted question.
 
-### Factory Pattern
+## Local Rules / Tooling Overrides
 
-Use `create_*` factory functions for constructing complex objects:
+- Cursor/Copilot rules: no `.cursor` or `.cursorrules` directories were found in the repository. No `.github/copilot-instructions.md` present. If these files are added later, follow their directives and surface any conflicts to the user.
 
-```python
-def create_comparator(judge_model: ModelConfig, rubric: Optional[Rubric] = None) -> Comparator:
-    ...
-```
+## Useful Paths
 
-### Configuration
+- `src/llm_eval/cli/main.py`
+- `src/llm_eval/db/models.py`
+- `src/llm_eval/db/session.py`
+- `src/llm_eval/eval/runner.py`
+- `src/llm_eval/eval/judge.py`
+- `src/llm_eval/eval/comparator.py`
+- `config/*.yaml`, `prompts/*.j2`, `alembic/`
 
-- Environment variables use `DB_` prefix for database settings (via `pydantic-settings`)
-- YAML files for model configs and rubrics
-- Resolve API keys from env vars at config boundaries, not deep in business logic
+## Next Steps Agents Should Offer
 
-### CLI Patterns
-
-- Use Typer with `typer.Option(..., help="...")` for all CLI parameters
-- Validate inputs early, raise `typer.BadParameter` for user errors
-- Use Rich `Table` and `Panel` for formatted output
-- Wrap command bodies in try/except with `raise typer.Exit(code=1)` on failure
-
-### Testing
-
-- Test files in `tests/` directory, named `test_*.py`
-- Use pytest fixtures for database sessions and common test data
-- No existing test framework patterns established yet - follow pytest conventions
+1. Run lint/format and fix trivial issues (ruff --fix, black) and report remaining lint failures.
+2. Add or update tests for behavioral changes and run the targeted test file locally.
+3. Open a branch and create a focused PR describing the change, tests added, and rationale.
