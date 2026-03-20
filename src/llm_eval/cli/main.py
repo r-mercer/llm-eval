@@ -28,12 +28,14 @@ from llm_eval.db.session import get_session, init_db
 # Typer App Setup with Rich
 # =============================================================================
 
-custom_theme = Theme({
-    "info": "cyan",
-    "warning": "yellow",
-    "error": "bold red",
-    "success": "bold green",
-})
+custom_theme = Theme(
+    {
+        "info": "cyan",
+        "warning": "yellow",
+        "error": "bold red",
+        "success": "bold green",
+    }
+)
 
 console = Console(theme=custom_theme)
 
@@ -91,7 +93,9 @@ def add_model_command(
     name: str = typer.Option(..., help="Unique model name (e.g., gpt-4o, lmstudio-local)"),
     provider: str = typer.Option(..., help="Provider name (openai, anthropic, ollama, etc.)"),
     model: str = typer.Option(..., help="Model name passed to API"),
-    base_url: Optional[str] = typer.Option(None, help="Base URL for API endpoints (for local models)"),
+    base_url: Optional[str] = typer.Option(
+        None, help="Base URL for API endpoints (for local models)"
+    ),
     api_key: Optional[str] = typer.Option(None, help="API key or env var reference"),
 ) -> None:
     """Add a model configuration to the database."""
@@ -135,7 +139,7 @@ def add_rubric_command(
     weights_json: str = typer.Option(
         ...,
         "--weights-json",
-        help="JSON string of criterion weights (e.g., '{\"accuracy\": 0.5, \"clarity\": 0.5}')",
+        help='JSON string of criterion weights (e.g., \'{"accuracy": 0.5, "clarity": 0.5}\')',
     ),
 ) -> None:
     """Add a rubric to the database."""
@@ -342,7 +346,9 @@ def import_tasks_command(
             raise typer.BadParameter(f"Task at index {i} is not an object")
         if "name" not in task_data or "input_text" not in task_data:
             print_error(f"Task at index {i} missing required fields (name, input_text)")
-            raise typer.BadParameter(f"Task at index {i} missing required fields (name, input_text)")
+            raise typer.BadParameter(
+                f"Task at index {i} missing required fields (name, input_text)"
+            )
 
     # Import tasks
     imported_count = 0
@@ -385,7 +391,12 @@ def create_experiment_command(
     try:
         with get_session() as session:
             # Validate judge model exists
-            judge = session.query(ModelConfig).filter(ModelConfig.is_active).filter(ModelConfig.name == judge_model).first()
+            judge = (
+                session.query(ModelConfig)
+                .filter(ModelConfig.is_active)
+                .filter(ModelConfig.name == judge_model)
+                .first()
+            )
             if not judge:
                 print_error(f"Judge model '{judge_model}' not found")
                 raise typer.BadParameter(f"Judge model '{judge_model}' not found")
@@ -399,7 +410,12 @@ def create_experiment_command(
             # Validate baseline model if provided
             baseline = None
             if baseline_model:
-                baseline = session.query(ModelConfig).filter(ModelConfig.is_active).filter(ModelConfig.name == baseline_model).first()
+                baseline = (
+                    session.query(ModelConfig)
+                    .filter(ModelConfig.is_active)
+                    .filter(ModelConfig.name == baseline_model)
+                    .first()
+                )
                 if not baseline:
                     print_error(f"Baseline model '{baseline_model}' not found")
                     raise typer.BadParameter(f"Baseline model '{baseline_model}' not found")
@@ -450,7 +466,7 @@ def list_experiments_command() -> None:
             judge_name = e.judge_model.name if e.judge_model else "-"
             rubric_name = e.rubric.name if e.rubric else "-"
             created_str = e.created_at.strftime("%Y-%m-%d") if e.created_at else "-"
-            
+
             status_color = {
                 "pending": "yellow",
                 "running": "cyan",
@@ -487,7 +503,9 @@ def experiment_status_command(
 
             # Get related data
             results_count = session.query(Result).filter(Result.experiment_id == exp_id).count()
-            judge_runs_count = session.query(JudgeRun).filter(JudgeRun.experiment_id == exp_id).count()
+            judge_runs_count = (
+                session.query(JudgeRun).filter(JudgeRun.experiment_id == exp_id).count()
+            )
 
         # Display status panel
         status_color = {
@@ -638,7 +656,7 @@ def run_compare_command(
         # 3. Calculate win rate
 
         print_success("Comparison complete!")
-        
+
         # Display comparison results table
         table = Table(title="Comparison Results", show_header=True, header_style="bold cyan")
         table.add_column("Model", style="green")
@@ -696,7 +714,9 @@ def show_results_command(
             print_info("No results found for this experiment.")
             return
 
-        table = Table(title=f"Results for '{experiment.name}'", show_header=True, header_style="bold cyan")
+        table = Table(
+            title=f"Results for '{experiment.name}'", show_header=True, header_style="bold cyan"
+        )
         table.add_column("Task", style="green")
         table.add_column("Model", style="yellow")
         table.add_column("Output Preview", style="blue")
@@ -706,7 +726,9 @@ def show_results_command(
         for r in results:
             task_name = r.task.name if r.task else "-"
             model_name = r.model.name if r.model else "-"
-            output_preview = r.output_text[:40] + "..." if len(r.output_text) > 40 else r.output_text
+            output_preview = (
+                r.output_text[:40] + "..." if len(r.output_text) > 40 else r.output_text
+            )
             score_str = f"{r.score:.2f}" if r.score is not None else "-"
             created_str = r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "-"
 
@@ -723,19 +745,22 @@ def show_results_command(
         # Show judge runs if available
         with get_session() as session:
             judge_runs = (
-                session.query(JudgeRun)
-                .filter(JudgeRun.experiment_id == exp_id)
-                .limit(limit)
-                .all()
+                session.query(JudgeRun).filter(JudgeRun.experiment_id == exp_id).limit(limit).all()
             )
 
         if judge_runs:
-            judge_table = Table(title="Judge Evaluations", show_header=True, header_style="bold cyan")
+            judge_table = Table(
+                title="Judge Evaluations", show_header=True, header_style="bold cyan"
+            )
             judge_table.add_column("Winner", style="green")
             judge_table.add_column("Justification Preview", style="yellow")
 
             for jr in judge_runs:
-                justification_preview = jr.justification[:60] + "..." if len(jr.justification) > 60 else jr.justification
+                justification_preview = (
+                    jr.justification[:60] + "..."
+                    if len(jr.justification) > 60
+                    else jr.justification
+                )
                 judge_table.add_row(jr.winner, justification_preview)
 
             console.print(judge_table)
@@ -826,13 +851,15 @@ def export_results_command(
                     )
                     writer.writeheader()
                     for r in results:
-                        writer.writerow({
-                            "task_name": r.task.name if r.task else "",
-                            "model_name": r.model.name if r.model else "",
-                            "input_text": r.input_text,
-                            "output_text": r.output_text,
-                            "score": r.score if r.score is not None else "",
-                        })
+                        writer.writerow(
+                            {
+                                "task_name": r.task.name if r.task else "",
+                                "model_name": r.model.name if r.model else "",
+                                "input_text": r.input_text,
+                                "output_text": r.output_text,
+                                "score": r.score if r.score is not None else "",
+                            }
+                        )
 
         print_success(f"Results exported to '{output_file}'")
     except typer.BadParameter:

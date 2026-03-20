@@ -25,7 +25,6 @@ from llm_eval.eval.comparator import create_comparator
 from llm_eval.eval.ranking import EloRating
 from llm_eval.models.provider import ProviderFactory
 
-
 # =============================================================================
 # Custom Exceptions
 # =============================================================================
@@ -219,7 +218,7 @@ class ExperimentRunner:
         # Compare all pairs on all tasks
         for task in tasks:
             for i, model_a in enumerate(models):
-                for model_b in models[i + 1:]:
+                for model_b in models[i + 1 :]:
                     result_a = results[model_a.id][task.id]
                     result_b = results[model_b.id][task.id]
 
@@ -342,11 +341,9 @@ class ExperimentRunner:
 
             # Compare all pairs
             for i, result_a in enumerate(task_results):
-                for result_b in task_results[i + 1:]:
+                for result_b in task_results[i + 1 :]:
                     # Skip if comparison already exists
-                    existing = self._get_existing_judge_run(
-                        experiment.id, result_a.id, result_b.id
-                    )
+                    existing = self._get_existing_judge_run(experiment.id, result_a.id, result_b.id)
                     if existing:
                         continue
 

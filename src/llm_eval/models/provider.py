@@ -12,7 +12,6 @@ from litellm import acompletion, completion
 
 from llm_eval.db.models import ModelConfig
 
-
 # =============================================================================
 # Custom Exceptions
 # =============================================================================
@@ -179,7 +178,9 @@ class ModelProvider:
         """
         params = {
             "model": self._config.model,
-            "temperature": temperature if temperature is not None else self._config.default_temperature,
+            "temperature": (
+                temperature if temperature is not None else self._config.default_temperature
+            ),
             "max_tokens": max_tokens if max_tokens is not None else self._config.default_max_tokens,
         }
 
@@ -202,13 +203,19 @@ class ModelProvider:
 
         # Map LiteLLM errors to our custom exceptions
         if "authentication" in error_message.lower() or "api key" in error_message.lower():
-            return AuthenticationError(f"Authentication failed: {error_message}", model=self._model_identifier)
+            return AuthenticationError(
+                f"Authentication failed: {error_message}", model=self._model_identifier
+            )
 
         if "rate limit" in error_message.lower():
-            return RateLimitError(f"Rate limit exceeded: {error_message}", model=self._model_identifier)
+            return RateLimitError(
+                f"Rate limit exceeded: {error_message}", model=self._model_identifier
+            )
 
         if "context length" in error_message.lower():
-            return ProviderError(f"Context length exceeded: {error_message}", model=self._model_identifier)
+            return ProviderError(
+                f"Context length exceeded: {error_message}", model=self._model_identifier
+            )
 
         return ProviderError(f"Provider error: {error_message}", model=self._model_identifier)
 

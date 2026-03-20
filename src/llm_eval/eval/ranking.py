@@ -160,15 +160,17 @@ class EloRating:
         leaderboard = []
         for model_id, rating in self._ratings.items():
             win_rate = rating.wins / rating.matches if rating.matches > 0 else 0.0
-            leaderboard.append({
-                "model_id": model_id,
-                "rating": rating.rating,
-                "wins": rating.wins,
-                "losses": rating.losses,
-                "ties": rating.ties,
-                "matches": rating.matches,
-                "win_rate": win_rate,
-            })
+            leaderboard.append(
+                {
+                    "model_id": model_id,
+                    "rating": rating.rating,
+                    "wins": rating.wins,
+                    "losses": rating.losses,
+                    "ties": rating.ties,
+                    "matches": rating.matches,
+                    "win_rate": win_rate,
+                }
+            )
 
         # Sort by rating descending
         leaderboard.sort(key=lambda x: x["rating"], reverse=True)

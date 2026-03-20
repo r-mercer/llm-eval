@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Generator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlmodel import Session, SQLModel, create_engine
 
-
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
 

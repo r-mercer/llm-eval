@@ -11,7 +11,6 @@ from jinja2 import Template
 from llm_eval.db.models import ModelConfig, Rubric
 from llm_eval.models.provider import ModelProvider, ProviderFactory
 
-
 # =============================================================================
 # Configuration Dataclasses
 # =============================================================================
