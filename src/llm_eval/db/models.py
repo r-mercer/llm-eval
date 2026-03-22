@@ -246,8 +246,8 @@ class JudgeRun(SQLModel, table=True):
     __tablename__ = "judge_runs"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    experiment_id: uuid.UUID = Field(
-        foreign_key="experiments.id", description="Parent experiment ID"
+    experiment_id: Optional[uuid.UUID] = Field(
+        default=None, foreign_key="experiments.id", description="Parent experiment ID"
     )
     result_a_id: uuid.UUID = Field(foreign_key="results.id", description="First result to compare")
     result_b_id: uuid.UUID = Field(foreign_key="results.id", description="Second result to compare")

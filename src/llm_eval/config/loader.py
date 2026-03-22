@@ -34,25 +34,21 @@ class EvaluationConfig:
 
 
 def resolve_api_key(api_key: Optional[str]) -> Optional[str]:
-    """Resolve API key from direct value or env:VAR_NAME format.
+    """Resolve API key from direct value or $VAR_NAME format.
 
     Handles two formats:
     - Direct value: "sk-12345" -> returns "sk-12345"
-    - Environment variable: "env:OPENAI_API_KEY" -> returns os.environ["OPENAI_API_KEY"]
+    - Environment variable: "$OPENAI_API_KEY" -> returns os.environ["OPENAI_API_KEY"]
     """
-    # Early exit for None or empty
     if not api_key:
         return None
 
-    # Early exit for direct value (no env: prefix)
-    if not api_key.startswith("env:"):
+    if not api_key.startswith("$"):
         return api_key
 
-    # Parse env:VAR_NAME format
-    var_name = api_key[4:]  # Remove "env:" prefix
+    var_name = api_key[1:]
     env_value = os.environ.get(var_name)
 
-    # Fail fast if environment variable not found
     if env_value is None:
         raise ValueError(f"Environment variable '{var_name}' referenced in api_key not found")
 
